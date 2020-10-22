@@ -9,13 +9,15 @@ import {
   Card,
   Button,
   ListGroupItem,
+  Form,
 } from 'react-bootstrap';
 import Rating from '../components/Rating/Rating';
 import Message from '../components/Message/Message';
 import Loader from '../components/Loader/Loader';
 import { listProductDetails } from '../actions/productActions';
 
-const ProductScreen = ({ match }) => {
+const ProductScreen = ({ history, match }) => {
+  const [qty, setQty] = useState(0);
   const dispatch = useDispatch();
   const productDetails = useSelector(state => state.productDetails);
   const { loading, error, product } = productDetails;
@@ -23,6 +25,10 @@ const ProductScreen = ({ match }) => {
   useEffect(() => {
     dispatch(listProductDetails(match.params.id));
   }, [dispatch, match]);
+
+  const addToCartHandler = () => {
+    history.push(`/cart/${match.params.id}?qty=${qty}`);
+  };
 
   return (
     <>
@@ -74,11 +80,32 @@ const ProductScreen = ({ match }) => {
                     </Col>
                   </Row>
                 </ListGroupItem>
+                {product.countInStock > 0 && (
+                  <ListGroupItem>
+                    <Row>
+                      <Col>Qty</Col>
+                      <Col>
+                        <Form.Control
+                          as='select'
+                          value={qty}
+                          onChange={e => setQty(e.target.value)}
+                        >
+                          {[...Array(product.countInStock).keys()].map(x => (
+                            <option key={x + 1} value={x + 1}>
+                              {x + 1}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Col>
+                    </Row>
+                  </ListGroupItem>
+                )}
                 <ListGroupItem>
                   <Button
                     className='btn-block'
                     type='button'
                     disabled={product.countInStock === 0}
+                    onClick={addToCartHandler}
                   >
                     Add to Cart
                   </Button>
